@@ -12,9 +12,34 @@
     .fade-in { animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    #password-screen { display: flex; }
+    #main-content { display: none; }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
+
+<!-- パスワード画面 -->
+<div id="password-screen" class="fixed inset-0 bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div class="text-center mb-6">
+      <div class="text-5xl mb-3">🏠</div>
+      <h1 class="text-2xl font-bold text-slate-800">家族タスク</h1>
+      <p class="text-sm text-slate-400 mt-1">パスワードを入力してください</p>
+    </div>
+    <form id="password-form" class="space-y-4">
+      <input id="password-input" type="password" placeholder="パスワード" required
+        class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400" />
+      <button type="submit"
+        class="w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition-all shadow-md">
+        ログイン
+      </button>
+      <div id="password-error" class="text-sm text-red-500 text-center hidden">パスワードが違います</div>
+    </form>
+  </div>
+</div>
+
+<!-- メインコンテンツ -->
+<div id="main-content">
 
 <div class="max-w-5xl mx-auto px-4 pb-20">
   <!-- ヘッダー -->
@@ -180,6 +205,7 @@
       </div>
     </form>
   </div>
+</div>
 </div>
 
 <!-- Firebase SDKs -->
@@ -566,6 +592,35 @@ document.getElementById('member-form').addEventListener('submit', async e => {
   const input = document.getElementById('member-name');
   await addMember(input.value);
   input.value = '';
+});
+
+// ---- パスワード認証 ----
+const PASSWORD = '1217'; // ← パスワードをここに設定（日本語OK）
+
+document.getElementById('password-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('password-input');
+  const errorEl = document.getElementById('password-error');
+
+  if (input.value === PASSWORD) {
+    sessionStorage.setItem('family-tasks-auth', 'true');
+    document.getElementById('password-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    input.value = '';
+  } else {
+    errorEl.classList.remove('hidden');
+    input.value = '';
+    input.focus();
+    setTimeout(() => errorEl.classList.add('hidden'), 3000);
+  }
+});
+
+// ページロード時にパスワード認証をチェック
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem('family-tasks-auth') === 'true') {
+    document.getElementById('password-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+  }
 });
 </script>
 </body>
